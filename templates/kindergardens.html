@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block js_code %}
+  <script type="text/javascript">
+
+        // Создает обработчик события window.onLoad
+        $(function () {
+            
+	$("#active_kindergardens_id").addClass("active");
+});
+        </script>
+
+{% endblock js_code %}
+
+{% block content %}
+
+
+
+    <table class="table table-striped table-bordered">
+<thead>
+<th>Детский садик</th>
+<th>Где находится</th>
+</thead>
+{% for garden in object_list %}
+
+             
+
+	<tr>
+
+<td>
+	<a href="/kindergardens/{{ garden.id }}">{{ garden.name }}</a>
+</td>
+<td>
+	{{ garden.address }}
+</td>
+
+</tr>
+
+{% endfor %}
+
+	</table >
+
+{% endblock content %}
+  

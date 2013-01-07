@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% load markup %}
+{% load comments %}
+
+{% block js_code %}
+ <script src="http://api-maps.yandex.ru/1.1/index.xml?key=ANpUFEkBAAAAf7jmJwMAHGZHrcKNDsbEqEVjEUtCmufxQMwAAAAAAAAAAAAvVrubVT4btztbduoIgTLAeFILaQ==" type="text/javascript"></script>
+  <script type="text/javascript">
+
+    
+        // Создает обработчик события window.onLoad
+        YMaps.jQuery(function () {
+
+        	var map = new YMaps.Map(YMaps.jQuery("#YMapsID")[0]);
+        	 map.enableScrollZoom();
+        	 map.setType(YMaps.MapType.MAP);
+        	
+        		// Создает метку, значок которой не скрывается при открытии балуна
+        		var placemark = new YMaps.Placemark(new YMaps.GeoPoint({{ object.js_lng }}, {{ object.js_lat }}), {hideIcon: false});
+        		// Добавляет метку на карту
+        		map.addOverlay(placemark);
+       	
+        	map.setCenter(new YMaps.GeoPoint({{ object.js_lng }}, {{ object.js_lat }}), 17);
+        })
+    </script>
+ 
+{% endblock js_code %}
+
+
+{% block section %}
+	Детали
+{% endblock section %}
+
+{% block content %}
+
+	<h4>{{ object.name }}</h4>
+	
+		
+	
+	<strong>Адрес: </strong>{{ object.address }}<br />
+	<strong>Телефон: </strong>{{object.telephone }}<br />
+	<strong>Расположение на карте: </strong><br />
+		<div id="YMapsID" style="width:300px;height:200px"></div>
+	
+	<h5>Статьи</h5>
+	<ul class="large">
+		{% for article in object.article_set.all %}
+                <li>
+                    <a href="/article/{{ article.id }}">{{ article.title }}</a>
+                </li>
+                {% empty %}
+                    <li>Статей нет</li>    
+                {% endfor %}
+            </ul>
+	<h5>Описание</h5>
+	{{ object.rst_description|restructuredtext}}
+
+
+<h5>Комментарии</h5>
+
+    {% get_comment_count for object as comment_count %}
+    {% if comment_count %}
+        {% render_comment_list for object %}
+    {% else %}
+        Нет комментариев
+    {% endif %}
+
+
+    <h5>Оставить комментарий</h5>
+    {% render_comment_form for object %}
+	
+
+
+{% endblock content %}

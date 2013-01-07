@@ -1,0 +1,153 @@
+{% extends "base.html" %}
+
+{% block js_code %}
+ <script src="http://api-maps.yandex.ru/1.1/index.xml?key=ANpUFEkBAAAAf7jmJwMAHGZHrcKNDsbEqEVjEUtCmufxQMwAAAAAAAAAAAAvVrubVT4btztbduoIgTLAeFILaQ==" type="text/javascript"></script>
+  <script type="text/javascript">
+
+    
+
+        // Создает обработчик события window.onLoad
+        $(function () {
+            
+    $("#active_choose_id").addClass("active");
+});
+      
+
+/*
+Широта: 54°9′17.56″N (54.154878)
+Долгота: 48°5′37.22″E (48.093673)
+
+Широта: 54°27′7.34″N (54.452039)
+Долгота: 48°45′0.38″E (48.750106)
+
+var bounds = new YMaps.GeoBounds(
+    new YMaps.GeoPoint(54.154878, 48.093673),
+    new YMaps.GeoPoint(54.452039, 48.750106));
+
+
+*/
+        // Создает обработчик события window.onLoad
+function start_geo()
+{
+    var addr = YMaps.jQuery('#id_address').val();
+    bounds = new YMaps.GeoBounds(
+        new YMaps.GeoPoint(48.093673, 54.154878),
+        new YMaps.GeoPoint(48.750106, 54.452039));
+    //var geocoder = new YMaps.Geocoder(addr, {boundedBy : bounds, results: 1, strictBounds: true});
+    var geocoder = new YMaps.Geocoder(addr, {boundedBy : bounds, strictBounds: true});
+                   
+    YMaps.Events.observe(geocoder, geocoder.Events.Load, function () {
+    if (this.length()) {
+        show_table(this.get(0).getGeoPoint());
+    }else {
+        alert("Ничего не найдено")
+    }
+});
+ 
+    YMaps.Events.observe(geocoder, geocoder.Events.Fault, function (error) {
+    alert("Произошла ошибка: " + error.message)
+});
+                    
+                
+  }
+
+
+function show_table(home)
+{
+
+                var g = {{coord|safe}};
+                var near = [];
+                var radius = 1000;
+                for (i in g)
+                {
+                    var geo_point = new YMaps.GeoPoint(g[i]["coord"][0], g[i]["coord"][1]);
+                    var distance = home.distance(geo_point);
+                    if (distance < radius)
+                    {
+                        g[i]["distance"] = Math.round(distance);
+                        g[i]["geo_point"] = geo_point;
+                        near.push(g[i]);
+                    } 
+                }
+                
+                near.sort(function(a,b)
+                    {
+                        return a['distance'] - b['distance'];
+                        } );
+                YMaps.jQuery('#tbl').empty();
+         YMaps.jQuery('#tbl').append("<thead><th>Детский сад</th><th>Расстояние в метрах</th></thead>");
+
+         var bounds = new YMaps.GeoCollectionBounds();
+        
+
+        var map = new YMaps.Map(YMaps.jQuery("#ymap")[0]);
+        map.enableScrollZoom();
+        var home_placemark = new YMaps.Placemark(home, {style:"default#redPoint"});
+        home_placemark.name = "Дом";
+        map.addOverlay(home_placemark);
+        bounds.add(home);
+
+         near.forEach(function(i)
+         {
+            bounds.add(i["geo_point"]);
+
+                // Создает метку, значок которой не скрывается при открытии балуна
+                var placemark = new YMaps.Placemark(i["geo_point"]);
+                placemark.name = i["name"];
+                placemark.description = i["distance"] + " метров";
+                // Добавляет метку на карту
+                map.addOverlay(placemark);
+
+
+            YMaps.jQuery("#tbl").append("<tr><td><a href=\"/kindergardens/" + i["g_id"] +"/\" >" + i["name"] + "</a></td><td> <span class='large'>" + i["distance"] +  "</span></td</tr>");
+          }); 
+
+
+         
+         map.setBounds(bounds);
+
+         if (near.length > 0)
+         {
+         var router = new YMaps.Router([home, near[0]["geo_point"]]);
+    YMaps.Events.observe(router, router.Events.Success, function() {
+   // router.getWayPoint(0).setIconContent('Точка отправления');
+    //router.getWayPoint(1).setIconContent('Точка прибытия');
+          map.addOverlay(router);
+});
+}
+         
+
+}
+
+
+    </script>
+ 
+{% endblock js_code %}
+
+
+
+{% block section %}
+Выбор
+{% endblock section %}
+
+{% block content %}
+
+
+<h4>Выбрать детский сад</h4>
+    <form class="form-inline" onsubmit="return false;">
+    <p><label for="id_address">Адрес:</label>
+    <input id="id_address" type="text" name="address"  />
+    <button type="submit" class="btn btn-primary" onclick="start_geo();">Найти</button> </p>
+    </form>
+
+    
+
+    <div id="table_div_id">
+<table id="tbl" class="table table-striped table-bordered"></table> 
+    </div>
+<div id="ymap" style="width:500px;height:300px">
+
+    </div>
+
+{% endblock content %}
+   

@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block section %}
+Админка
+{% endblock section %}
+
+{% block content %}
+
+<div class="span-20 last">
+
+<div id="admin_menu">
+<a href="/admin/garden_list/" class="button">Детские сады</a>
+<a href="/admin/user_list/" class="button">Управление пользователями</a>
+<a href="/admin/article_list/" class="button">Статьи</a>
+<a href="/" class="button">Галереи</a>
+</div>
+
+</div>
+
+<div class="span-20 last">
+<div id="admin_content" class="box">
+{% block admin_content %}
+
+Выберете пункт
+
+{% endblock admin_content %}
+</div>
+</div>
+
+{% endblock content %}
+   

@@ -1,0 +1,59 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title>Примеры. Простой вызов карты.</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <script src="http://api-maps.yandex.ru/1.1/index.xml?key=ANpUFEkBAAAAf7jmJwMAHGZHrcKNDsbEqEVjEUtCmufxQMwAAAAAAAAAAAAvVrubVT4btztbduoIgTLAeFILaQ==" type="text/javascript"></script>
+    <script type="text/javascript">
+
+    
+arr = [
+{"name":"111","ll":[48.331882,54.259784]},
+{"name":"211","ll":[48.332182,54.259137]},
+{"name":"173","ll":[48.332669,54.253626]},
+{"name":"151","ll":[48.332229,54.25269]},
+{"name":"156","ll":[48.326168,54.251879]},
+{"name":"166","ll":[48.325781,54.251389]},
+{"name":"215","ll":[48.322938,54.254939]},
+{"name":"157","ll":[48.327509,54.258224]},
+{"name":"256","ll":[48.386358,54.356944]},
+{"name":"112","ll":[48.393664,54.345758]},
+{"name":"2","ll":[48.390955,54.32934]},
+{"name":"105","ll":[48.384102,54.321258]},
+{"name":"104","ll":[48.345185,54.304796]},
+{"name":"107","ll":[48.354691,54.308127]},
+{"name":"112","ll":[48.367782,54.287245]},
+{"name":"115","ll":[48.330991,54.257735]},
+{"name":"123","ll":[48.318778,54.295795]},
+{"name":"ромашка","ll":[48.277188,54.421259]},
+{"name":"березка","ll":[48.273379,54.422955]},
+{"name":"вишенка (примерно)","ll":[48.258048,54.43332]}
+]
+
+
+    
+        // Создает обработчик события window.onLoad
+        YMaps.jQuery(function () {
+        	var map = new YMaps.Map(YMaps.jQuery("#YMapsID")[0]);
+        	 map.enableScrollZoom();
+        	 map.setType(YMaps.MapType.SATELLITE);
+        	for (var i = 0; i < arr.length; i++)
+        		{
+        		// Создает метку, значок которой не скрывается при открытии балуна
+        		var placemark = new YMaps.Placemark(new YMaps.GeoPoint(arr[i].ll[0], arr[i].ll[1]), {hideIcon: false});
+
+        		// Добавляет метку на карту
+        		map.addOverlay(placemark);
+        		}
+        	
+        	
+        	map.setCenter(new YMaps.GeoPoint(48.386358,54.356944), 12);
+        })
+    </script>
+</head>
+
+<body>
+    <div id="YMapsID" style="width:600px;height:400px"></div>
+</body>
+
+</html>

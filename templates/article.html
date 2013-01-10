@@ -7,17 +7,9 @@
 
 {% block content %}
 <div class="box">
-	<h1>{{ object.kindergarden.name }}</h1>
-	<h2>{{ object.title }}</h2>
+	<h4>{{ object.kindergarden.name }}</h4>
+	<h5>{{ object.title }}</h5>
 	{{ object.rst_content|restructuredtext }}
 
-	<h3>Комментарии:</h3>
-	
-	{% for comment in object.articlecomment_set.all %}
-		<div class="box">
-		<strong>{{ comment.user.login }} </strong>
-		{{ comment.rst_comment|restructuredtext }}
-		</div>	
-	{% endfor %}
 </div>
 {% endblock content %}

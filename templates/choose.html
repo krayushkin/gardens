@@ -1,7 +1,8 @@
 {% extends "base.html" %}
 
 {% block js_code %}
- <script src="http://api-maps.yandex.ru/1.1/index.xml?key=ANpUFEkBAAAAf7jmJwMAHGZHrcKNDsbEqEVjEUtCmufxQMwAAAAAAAAAAAAvVrubVT4btztbduoIgTLAeFILaQ==" type="text/javascript"></script>
+<script src="http://api-maps.yandex.ru/2.0-stable/?load=package.full&lang=ru-RU" type="text/javascript"></script>
+
   <script type="text/javascript">
 
     
@@ -29,24 +30,26 @@ var bounds = new YMaps.GeoBounds(
         // Создает обработчик события window.onLoad
 function start_geo()
 {
-    var addr = YMaps.jQuery('#id_address').val();
-    bounds = new YMaps.GeoBounds(
-        new YMaps.GeoPoint(48.093673, 54.154878),
-        new YMaps.GeoPoint(48.750106, 54.452039));
-    //var geocoder = new YMaps.Geocoder(addr, {boundedBy : bounds, results: 1, strictBounds: true});
-    var geocoder = new YMaps.Geocoder(addr, {boundedBy : bounds, strictBounds: true});
-                   
-    YMaps.Events.observe(geocoder, geocoder.Events.Load, function () {
-    if (this.length()) {
-        show_table(this.get(0).getGeoPoint());
-    }else {
+    var addr = $('#id_address').val();
+    bounds = [[54.154878, 48.093673], [54.452039, 48.750106]];
+
+    var geocoder = new ymaps.geocode(addr, {boundedBy : bounds, strictBounds: true});
+    geocoder.then(
+    function (res) {
+    if (res.geoObjects.getLength()) {
+        show_table(res.geoObjects.get(0));
+    } else {
         alert("Ничего не найдено")
     }
-});
+}, 
+
+function (err){
+    alert("Произошла ошибка: " + err);
+}
+
+);
  
-    YMaps.Events.observe(geocoder, geocoder.Events.Fault, function (error) {
-    alert("Произошла ошибка: " + error.message)
-});
+   
                     
                 
   }
@@ -60,8 +63,11 @@ function show_table(home)
                 var radius = 1000;
                 for (i in g)
                 {
-                    var geo_point = new YMaps.GeoPoint(g[i]["coord"][0], g[i]["coord"][1]);
-                    var distance = home.distance(geo_point);
+                    var geo_point = new ymaps.Placemark(
+                        [g[i]["coord"][1], g[i]["coord"][0]]
+                        );
+                    var home_coord = home.geometry.getCoordinates();
+                    var distance =  ymaps.coordSystem.geo.getDistance(geo_point.geometry.getCoordinates(), home_coord);
                     if (distance < radius)
                     {
                         g[i]["distance"] = Math.round(distance);
@@ -74,48 +80,45 @@ function show_table(home)
                     {
                         return a['distance'] - b['distance'];
                         } );
-                YMaps.jQuery('#tbl').empty();
-         YMaps.jQuery('#tbl').append("<thead><th>Детский сад</th><th>Расстояние в метрах</th></thead>");
+         
 
-         var bounds = new YMaps.GeoCollectionBounds();
+         
+                $('#table_div_id').empty();
+                $('#ymap').empty();
+        $('<table id="tbl" class="table table-striped table-bordered"></table>').appendTo('#table_div_id');
+
+
+         $('#tbl').append("<thead><th>Детский сад</th><th>Расстояние в метрах</th></thead>");
+
+        var map = new ymaps.Map("ymap", {center: home.geometry.getCoordinates(), zoom: 17});
+
+
+        map.behaviors.enable('scrollZoom');
+        home.options.set("preset",'twirl#redDotIcon');
+
+        map.geoObjects.add(home);
         
 
-        var map = new YMaps.Map(YMaps.jQuery("#ymap")[0]);
-        map.enableScrollZoom();
-        var home_placemark = new YMaps.Placemark(home, {style:"default#redPoint"});
-        home_placemark.name = "Дом";
-        map.addOverlay(home_placemark);
-        bounds.add(home);
 
          near.forEach(function(i)
          {
-            bounds.add(i["geo_point"]);
+            var geo_point = i["geo_point"];
+            geo_point.properties.set("balloonContentHeader", i["name"]);
+            geo_point.properties.set("balloonContentBody", "Расстояние от дома: <strong>" + i["distance"]+ "</strong> метров");
 
-                // Создает метку, значок которой не скрывается при открытии балуна
-                var placemark = new YMaps.Placemark(i["geo_point"]);
-                placemark.name = i["name"];
-                placemark.description = i["distance"] + " метров";
-                // Добавляет метку на карту
-                map.addOverlay(placemark);
+            
+            map.geoObjects.add(geo_point);
+	    
 
-
-            YMaps.jQuery("#tbl").append("<tr><td><a href=\"/kindergardens/" + i["g_id"] +"/\" >" + i["name"] + "</a></td><td> <span class='large'>" + i["distance"] +  "</span></td</tr>");
+            $("#tbl").append("<tr><td><a href=\"/kindergardens/" + i["g_id"] +"/\" >" + i["name"] + "</a></td><td> <span class='large'>" + i["distance"] +  "</span></td</tr>");
           }); 
 
-
+         map.setBounds(map.geoObjects.getBounds());
+        var myCircle = new ymaps.Circle([home.geometry.getCoordinates(), radius]);
+        myCircle.options.set('fillOpacity', 0.1);
+        map.geoObjects.add(myCircle);
          
-         map.setBounds(bounds);
 
-         if (near.length > 0)
-         {
-         var router = new YMaps.Router([home, near[0]["geo_point"]]);
-    YMaps.Events.observe(router, router.Events.Success, function() {
-   // router.getWayPoint(0).setIconContent('Точка отправления');
-    //router.getWayPoint(1).setIconContent('Точка прибытия');
-          map.addOverlay(router);
-});
-}
-         
 
 }
 
@@ -132,18 +135,17 @@ function show_table(home)
 
 {% block content %}
 
-
-<h4>Выбрать детский сад</h4>
+<div class="hero-unit">
+<p>Введите улицу и дом где вы живете и найдите ближайшие детские садики в радиусе 1 км</p>
     <form class="form-inline" onsubmit="return false;">
     <p><label for="id_address">Адрес:</label>
     <input id="id_address" type="text" name="address"  />
     <button type="submit" class="btn btn-primary" onclick="start_geo();">Найти</button> </p>
     </form>
-
+</div>
     
 
     <div id="table_div_id">
-<table id="tbl" class="table table-striped table-bordered"></table> 
     </div>
 <div id="ymap" style="width:500px;height:300px">
 

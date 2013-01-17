@@ -135,19 +135,17 @@ function show_table(home)
 
 {% block content %}
 
-<div class="hero-unit">
 <p>Введите улицу и дом где вы живете и найдите ближайшие детские садики в радиусе 1 км</p>
     <form class="form-inline" onsubmit="return false;">
     <p><label for="id_address">Адрес:</label>
-    <input id="id_address" type="text" name="address"  />
-    <button type="submit" class="btn btn-primary" onclick="start_geo();">Найти</button> </p>
+    <input id="id_address" type="text" name="address"  /></p><p>
+    <button type="submit" class="btn btn-primary btn-large" onclick="start_geo();">Найти</button> </p>
     </form>
-</div>
     
 
     <div id="table_div_id">
     </div>
-<div id="ymap" style="width:500px;height:300px">
+<div id="ymap" style="width:300px;height:300px">
 
     </div>
 

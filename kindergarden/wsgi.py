@@ -15,7 +15,7 @@ framework.
 """
 import os, sys
 
-sys.path.append('/home/dima/kindergarden')
+sys.path.append('/home/ubuntu/kindergarden')
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "kindergarden.settings")
 
